@@ -187,7 +187,21 @@ class MainWindow(Tk, CenterWidgetMixin):
         
     def build(self):
         frame = Frame(self)
+        frame.pack(pady=20)
+        
+        Label(frame, text="Search").grid(row=0, column=0)
+        name_to_search = Entry(frame)
+        name_to_search.grid(row=0, column=1)
+        name_to_search.bind("<KeyRelease>", self.update_search_results)
+        
+        self.name_to_search= name_to_search
+        
+        #apellido.bind("<KeyRelease>", lambda event: self.validate(event, 2))
+        
+        
+        frame = Frame(self)
         frame.pack()
+        
         
         treeview = ttk.Treeview(frame)
         treeview["columns"] = ("DNI", "Nombre", "Apellido")
@@ -246,6 +260,25 @@ class MainWindow(Tk, CenterWidgetMixin):
     def edit(self):
         if self.treeview.focus():
             EditClientWindow(self)
+            
+    def update_search_results(self, event):
+        search_term = self.name_to_search.get().lower()
+        
+        if len(search_term) < 0:
+            for cliente in db.Clientes.lista:
+                self.treeview.insert(
+                    parent="", index="end", iid=cliente.dni, 
+                    values=(cliente.dni, cliente.nombre, cliente.apellido)
+                )
+        
+        self.treeview.delete(*self.treeview.get_children())
+        
+        for cliente in db.Clientes.lista:
+            if search_term in cliente.nombre.lower():
+                self.treeview.insert(
+                    parent="", index="end", iid=cliente.dni,
+                    values=(cliente.dni, cliente.nombre, cliente.apellido)
+                )
     
         
 
